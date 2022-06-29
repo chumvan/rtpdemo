@@ -19,7 +19,5 @@ func Send(senderAddress string, senderPort int, receiverAddress string, receiver
 		panic(err)
 	}
 	defer conn.Close()
-	fmt.Println("Sender's writing")
 	conn.Write(data)
-	fmt.Println("Sender exit")
 }
