@@ -72,7 +72,6 @@ const (
 //	- [x] framing
 //	- [x] Unmarshal()
 //  - [x] Marshal()
-//	- [ ] Clone()
 type T140Header struct {
 	Version        uint8
 	Padding        bool
@@ -153,15 +152,15 @@ func (h T140Header) MarshalTo(buf []byte) (n int, err error) {
 //
 // TODO T140 Packet Implementation
 //
-// - [ ] framing
-// - [ ] String()
-// - [ ] Unmarshal()
-// - [ ] Marshal()
-// - [ ] Clone()
+// - [x] framing
+// - [x] String()
+// - [x] Unmarshal()
+// - [x] Marshal()
 
 type T140Packet struct {
-	Header  T140Header
-	Payload []byte
+	Header      T140Header
+	Payload     []byte
+	PaddingSize byte
 }
 
 // String returns the representation of packet in string
@@ -177,4 +176,63 @@ func (p T140Packet) String() string {
 	s += fmt.Sprintf("\tSSRC: %d (%x)\n", h.SSRC, h.SSRC)
 	s += fmt.Sprintf("\tPayload Length: %d\n", len(p.Payload))
 	return s
+}
+
+// Unmarshal parses the input slice of bytes and stores the result in the receiving Packet
+// Return any error
+func (p *T140Packet) Unmarshal(buf []byte) error {
+	n, err := p.Header.Unmarshal(buf)
+	if err != nil {
+		return err
+	}
+
+	end := len(buf)
+	if p.Header.Padding {
+		// from RDC3550
+		// The last octet of the padding contains a count of how many padding octets
+		// should be ignored, including itself.
+		p.PaddingSize = buf[end-1]
+		end -= int(p.PaddingSize)
+	}
+	if end < n {
+		return errTooSmall
+	}
+	p.Payload = buf[n:end]
+	return nil
+}
+
+// MarshalTo serializes the packet and writes to the buffer
+// Return number of written byte and any error
+func (p T140Packet) MashalTo(buf []byte) (n int, err error) {
+	n, err = p.Header.MarshalTo(buf)
+	if err != nil {
+		return 0, err
+	}
+
+	if n+len(p.Payload)+int(p.PaddingSize) > len(buf) {
+		return 0, io.ErrShortBuffer
+	}
+
+	m := copy(buf[n:], p.Payload)
+
+	if p.Header.Padding {
+		buf[n+m+int(p.PaddingSize-1)] = p.PaddingSize // set the last octet to be padding length, padding value doesn't matter
+	}
+	return n + m + int(p.PaddingSize), nil
+}
+
+// MarshalSize returns the size of the packet once marshaled
+func (p T140Packet) MarshalSize() int {
+	return headerLength + len(p.Payload) + int(p.PaddingSize)
+}
+
+// Marshal serializes the packet into byte slice
+// Return a byte slice or any error
+func (p T140Packet) Marshal() (buf []byte, err error) {
+	buf = make([]byte, p.MarshalSize())
+	n, err := p.MashalTo(buf)
+	if err != nil {
+		return nil, err
+	}
+	return buf[:n], nil
 }
