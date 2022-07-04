@@ -98,7 +98,10 @@ func (h *T140Header) Unmarshal(buf []byte) (n int, err error) {
 		return 1, fmt.Errorf("%w", errT140NoExtensionAllowed)
 	}
 
-	h.CSRCCount = uint8(buf[0] & ccMask) // NOTE Not yet in used in RFC4103
+	h.CSRCCount = uint8(buf[0] & ccMask) // NOTE Not yet in used in RFC4103, should be 0
+	if h.CSRCCount != 0 {
+		return 1, fmt.Errorf("%w: got %d, expect 0", errT140CCNotZero, h.CSRCCount)
+	}
 	h.Marker = (buf[1] >> markerShift & markerMask) > 0
 	h.PayloadType = uint8(buf[1] & ptMask)
 
