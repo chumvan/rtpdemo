@@ -91,7 +91,7 @@ func (h *T140Header) Unmarshal(buf []byte) (n int, err error) {
 		return 0, fmt.Errorf("%w: %d < %d", errInsufficientLengthForAHeader, len(buf), headerLength)
 	}
 
-	h.Version = buf[0] >> versionShift & versionMask
+	h.Version = uint8(buf[0] >> versionShift & versionMask)
 	h.Padding = (buf[0] >> paddingShift & paddingMask) > 0
 	h.Extension = (buf[0] >> extensionShift & extensionMask) > 0 // NOTE Must be False <- no extension allowed
 	if h.Extension {
@@ -206,7 +206,7 @@ func (p *T140Packet) Unmarshal(buf []byte) error {
 
 // MarshalTo serializes the packet and writes to the buffer
 // Return number of written byte and any error
-func (p T140Packet) MashalTo(buf []byte) (n int, err error) {
+func (p T140Packet) MarshalTo(buf []byte) (n int, err error) {
 	n, err = p.Header.MarshalTo(buf)
 	if err != nil {
 		return 0, err
@@ -233,7 +233,7 @@ func (p T140Packet) MarshalSize() int {
 // Return a byte slice or any error
 func (p T140Packet) Marshal() (buf []byte, err error) {
 	buf = make([]byte, p.MarshalSize())
-	n, err := p.MashalTo(buf)
+	n, err := p.MarshalTo(buf)
 	if err != nil {
 		return nil, err
 	}
