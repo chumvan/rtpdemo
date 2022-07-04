@@ -8,7 +8,7 @@ import (
 
 func TestBasic(t *testing.T) {
 	p := &T140Packet{}
-	if err := p.Unmarshal([]byte{}); err == nil {
+	if _, err := p.Unmarshal([]byte{}); err == nil {
 		t.Fatal("Unmarshal did not error on zero length packet")
 	}
 
@@ -52,7 +52,7 @@ func TestBasic(t *testing.T) {
 		PaddingSize: 0x00,
 	}
 
-	if err := p.Unmarshal(rawPacket); err != nil {
+	if _, err := p.Unmarshal(rawPacket); err != nil {
 		t.Error(err)
 	} else if !reflect.DeepEqual(p, parsedPacket) {
 		fmt.Println(p.String())
@@ -110,9 +110,18 @@ func TestBasic(t *testing.T) {
 		PaddingSize: 0x03,
 	}
 
-	if err := p.Unmarshal(rawPacket); err != nil {
+	// for Unmarshal
+	if _, err := p.Unmarshal(rawPacket); err != nil {
 		t.Error(err)
 	} else if !reflect.DeepEqual(p, parsedPacket) {
 		t.Errorf("TestBasic Unmarshal for padded packet: got %#v, want %#v", p, parsedPacket)
+	}
+
+	// for Marshal
+	byteSlice, err = parsedPacket.Marshal()
+	if err != nil {
+		t.Error(err)
+	} else if !reflect.DeepEqual(byteSlice, rawPacket) {
+		t.Errorf("TestBasic Marshal for padded packet: got %#v, want %#v", byteSlice, rawPacket)
 	}
 }

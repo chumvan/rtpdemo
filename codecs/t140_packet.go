@@ -67,11 +67,6 @@ const (
 	csrcLength              = 4
 )
 
-//
-// TODO T140 Header Implementation
-//	- [x] framing
-//	- [x] Unmarshal()
-//  - [x] Marshal()
 type T140Header struct {
 	Version        uint8
 	Padding        bool
@@ -152,14 +147,6 @@ func (h T140Header) MarshalTo(buf []byte) (n int, err error) {
 	return n, nil
 }
 
-//
-// TODO T140 Packet Implementation
-//
-// - [x] framing
-// - [x] String()
-// - [x] Unmarshal()
-// - [x] Marshal()
-
 type T140Packet struct {
 	Header      T140Header
 	Payload     []byte
@@ -183,10 +170,10 @@ func (p T140Packet) String() string {
 
 // Unmarshal parses the input slice of bytes and stores the result in the receiving Packet
 // Return any error
-func (p *T140Packet) Unmarshal(buf []byte) error {
+func (p *T140Packet) Unmarshal(buf []byte) ([]byte, error) {
 	n, err := p.Header.Unmarshal(buf)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	end := len(buf)
@@ -198,10 +185,10 @@ func (p *T140Packet) Unmarshal(buf []byte) error {
 		end -= int(p.PaddingSize)
 	}
 	if end < n {
-		return errTooSmall
+		return nil, errTooSmall
 	}
 	p.Payload = buf[n:end]
-	return nil
+	return p.Payload, nil
 }
 
 // MarshalTo serializes the packet and writes to the buffer
