@@ -169,7 +169,7 @@ func (p T140Packet) String() string {
 }
 
 // Unmarshal parses the input slice of bytes and stores the result in the receiving Packet
-// Return any error
+// Return packet payload and any error
 func (p *T140Packet) Unmarshal(buf []byte) ([]byte, error) {
 	n, err := p.Header.Unmarshal(buf)
 	if err != nil {

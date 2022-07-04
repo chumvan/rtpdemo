@@ -5,7 +5,8 @@ import (
 	"net"
 )
 
-func Send(senderAddress string, senderPort int, receiverAddress string, receiverPort int, data []byte) {
+// Send sends a byte slice to the receiver address
+func Send(senderAddress string, senderPort int, receiverAddress string, receiverPort int, data []byte) error {
 	receiverAddr, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", receiverAddress, receiverPort))
 	if err != nil {
 		panic(err)
@@ -20,4 +21,5 @@ func Send(senderAddress string, senderPort int, receiverAddress string, receiver
 	}
 	defer conn.Close()
 	conn.Write(data)
+	return nil
 }
