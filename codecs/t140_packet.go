@@ -67,6 +67,9 @@ const (
 	csrcLength              = 4
 )
 
+//
+// ------------------------------------ T140 HEADER ------------------------------------
+//
 type T140Header struct {
 	Version        uint8
 	Padding        bool
@@ -147,6 +150,26 @@ func (h T140Header) MarshalTo(buf []byte) (n int, err error) {
 	return n, nil
 }
 
+//
+// ------------------------------------ T140 PAYLOAD ------------------------------------
+//
+
+// T140Payloader payloads T140 packets
+type T140Payloader struct{}
+
+// Payload fragments an input byte slice across one/more byte slices.
+// Return a slice of payload-ed byte slice
+func (p *T140Payloader) Payload(mtu uint16, payload []byte) (payloads [][]byte) {
+	if len(payload) == 0 {
+		return payloads
+	}
+	// TODO If the length of payload is not zero
+	return payloads
+}
+
+//
+// ------------------------------------ T140 PACKET ------------------------------------
+//
 type T140Packet struct {
 	Header      T140Header
 	Payload     []byte

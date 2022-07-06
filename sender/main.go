@@ -14,7 +14,6 @@ const (
 	senderAddress   = "127.0.0.1"
 	senderPort      = 6421
 	mtu             = 1500
-	data            = "Hello"
 )
 
 func main() {
