@@ -48,6 +48,8 @@ func (t *T140Writer) WriteRTP(packet *rtp.Packet) error {
 		return err
 	}
 
-	_, err = t.writer.Write(rawRTP)
+	if _, err = t.writer.Write(rawRTP); err != nil {
+		return err
+	}
 	return nil
 }
