@@ -43,6 +43,7 @@ import (
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+				 	------------------------------
 
 const (
+	payloadSize             = 128
 	headerLength            = 12 // from V to SSRC
 	versionShift            = 6
 	versionMask             = 0x3
@@ -147,24 +148,40 @@ func (h T140Header) MarshalTo(buf []byte) (n int, err error) {
 	binary.BigEndian.PutUint32(buf[8:12], h.SSRC)
 
 	n = headerLength
-	return n, nil
+	return
 }
 
 //
 // ------------------------------------ T140 PAYLOAD ------------------------------------
 //
 
+// T140 payload includes a block of UTF-8 character.
+// There is no further header specified in the T140 payload yet.
+// Therefore, the RTP payload with T140-payload-format only includes the being transmitted bytes
+
 // T140Payloader payloads T140 packets
 type T140Payloader struct{}
 
 // Payload fragments an input byte slice across one/more byte slices.
+// T140-payload in a packet is filled. However, for T140 there is no header
 // Return a slice of payload-ed byte slice
 func (p *T140Payloader) Payload(mtu uint16, payload []byte) (payloads [][]byte) {
-	if len(payload) == 0 {
-		return payloads
+	payloadRemainingLength := len(payload)
+	if payloadRemainingLength <= 0 {
+		return
 	}
-	// TODO If the length of payload is not zero
-	return payloads
+	payloadIndex := 0
+	for payloadRemainingLength > 0 {
+		currentPayloadLength := min(payloadSize, payloadRemainingLength)
+		out := make([]byte, payloadSize)
+
+		copy(out, payload[payloadIndex:payloadIndex+currentPayloadLength])
+		payloads = append(payloads, out)
+
+		payloadRemainingLength -= currentPayloadLength
+		payloadIndex += currentPayloadLength
+	}
+	return
 }
 
 //
