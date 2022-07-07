@@ -30,6 +30,7 @@ func New(filename string) (*T140Writer, error) {
 }
 
 func (t *T140Writer) Close() error {
+	t.cachedPacket = nil
 	if t.writer != nil {
 		if closer, ok := t.writer.(io.Closer); ok {
 			return closer.Close()

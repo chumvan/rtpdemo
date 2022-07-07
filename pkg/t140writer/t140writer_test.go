@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -14,14 +16,17 @@ const (
 	mtu             = 1500
 )
 
+var localAddrString = fmt.Sprintf("%s:%d", senderAddress, senderPort)
+var remoteAddrString = fmt.Sprintf("%s:%d", receiverAddress, receiverPort)
+
 var udp = &net.UDPConn{}
 
 func init() {
-	receiverAddr, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", receiverAddress, receiverPort))
+	senderAddr, err := net.ResolveUDPAddr("udp4", localAddrString)
 	if err != nil {
 		panic(err)
 	}
-	senderAddr, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%d", senderAddress, senderPort))
+	receiverAddr, err := net.ResolveUDPAddr("udp4", remoteAddrString)
 	if err != nil {
 		panic(err)
 	}
@@ -31,8 +36,17 @@ func init() {
 	}
 }
 
-func TestServer(t *testing.T) {
-	if udp.LocalAddr().Network() != "udp" || udp.LocalAddr().String() != "127.0.0.1:6421" {
+func TestServerInit(t *testing.T) {
+
+	if udp.LocalAddr().Network() != "udp" ||
+		udp.LocalAddr().String() != localAddrString ||
+		udp.RemoteAddr().String() != remoteAddrString {
 		t.Errorf("Wrong connection setting: \nExpect: ,%#v,\nGot: ,%#v,", "127.0.0.1:6421", udp.LocalAddr().String())
+		udp.Close()
 	}
+}
+
+func TestWriter(t *testing.T) {
+	t140Writer := NewWith(udp)
+	assert.NotNil(t, t140Writer.Close)
 }
