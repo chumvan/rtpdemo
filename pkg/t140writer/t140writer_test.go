@@ -46,7 +46,8 @@ func TestServerInit(t *testing.T) {
 	}
 }
 
-func TestWriter(t *testing.T) {
+func TestNewWith(t *testing.T) {
 	t140Writer := NewWith(udp)
 	assert.NotNil(t, t140Writer.Close)
+	t140Writer.Close()
 }
